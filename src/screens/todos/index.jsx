@@ -1,6 +1,7 @@
 import React from "react";
 import { AddTodo } from "../../components";
 import axios from 'axios';
+import { Col, Container, Row } from "react-bootstrap";
 
 export const Todos = (props) => {
 
@@ -9,7 +10,8 @@ export const Todos = (props) => {
     const addTodoInitialState = {
         isLoading: false,
         isError: false,
-        data: null
+        data: null,
+        message: ""
     }
 
     const [state, setState] = React.useState({ ...initialState });
@@ -17,7 +19,7 @@ export const Todos = (props) => {
     const [addTodo, setAddTodo] = React.useState({ ...addTodoInitialState });
 
     const onAddTodo = async () => {
-        setAddTodo({ ...addTodo, isLoading: true });
+        setAddTodo({ ...addTodo, isLoading: true, message: "" });
         try {
             let endPoint = 'https://631c0e5f4fa7d3264ca61b8e.mockapi.io/api/v1/todos';
             const data = await axios.post(endPoint, {
@@ -26,21 +28,35 @@ export const Todos = (props) => {
                 updatedAt: new Date().toISOString()
             });
             console.log("Response:", data);
-            setAddTodo({ ...addTodo, isLoading: false, isError: false, data })
+            setAddTodo({ ...addTodo, isLoading: false, isError: false, data, message: "Todo Added Successfully!" });
+            setState({ ...initialState });
         } catch (error) {
-            setAddTodo({ ...addTodo, isLoading: false, isError: true })
+            setAddTodo({ ...addTodo, isLoading: false, isError: true, message: "Opps! Something went wrong, Unable to Add Todo.  Try again later." })
         }
     }
 
-    return <div>
-        {/* Add Todo */}
-        <AddTodo
-            value={state.todo}
-            onChange={(todo) => setState({ ...state, todo })}
-            onAddBtnClicked={onAddTodo}
-        />
-        {addTodo.isLoading && <p>I am Loading....</p>}
-        {addTodo.isError && <p>I am got error signal</p>}
-        {addTodo.isLoading === false && addTodo.data && <p>Todo added successfully</p>}
-    </div>
+    return <Container>
+        <Row>
+            <Col>
+                <h5>Add Todo</h5>
+                {/* Add Todo */}
+                <AddTodo
+                    value={state.todo}
+                    onChange={(todo) => setState({ ...state, todo })}
+                    onAddBtnClicked={onAddTodo}
+                    loading={addTodo.isLoading}
+                />
+
+                {/* Success and error message */}
+                <p style={{ color: addTodo.isError ? "red" : "green" }}>{addTodo.message}</p>
+            </Col>
+        </Row>
+
+        {/* List All Todos */}
+        <Row>
+            <Col>
+                <h5>All Todos</h5>
+            </Col>
+        </Row>
+    </Container>
 }
