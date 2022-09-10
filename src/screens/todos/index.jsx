@@ -1,22 +1,18 @@
 import React from "react";
-import { AddTodo } from "../../components";
+import { AddTodo, TodoTable } from "../../components";
 import axios from 'axios';
 import { Col, Container, Row } from "react-bootstrap";
 
 export const Todos = (props) => {
 
-    const initialState = { todo: "" }
+    const initialState = { todo: "" };
+    const addTodoInitialState = { isLoading: false, isError: false, data: null, message: "" };
+    const getTodoInitialState = { isLoading: false, isError: false, data: [], message: "" };
 
-    const addTodoInitialState = {
-        isLoading: false,
-        isError: false,
-        data: null,
-        message: ""
-    }
 
     const [state, setState] = React.useState({ ...initialState });
-
     const [addTodo, setAddTodo] = React.useState({ ...addTodoInitialState });
+    const [todos, setTodos] = React.useState({ ...getTodoInitialState });
 
     const onAddTodo = async () => {
         setAddTodo({ ...addTodo, isLoading: true, message: "" });
@@ -27,13 +23,28 @@ export const Todos = (props) => {
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString()
             });
-            console.log("Response:", data);
             setAddTodo({ ...addTodo, isLoading: false, isError: false, data, message: "Todo Added Successfully!" });
             setState({ ...initialState });
         } catch (error) {
             setAddTodo({ ...addTodo, isLoading: false, isError: true, message: "Opps! Something went wrong, Unable to Add Todo.  Try again later." })
         }
     }
+
+    const getTodos = async () => {
+        setTodos({ ...todos, isLoading: true, message: "" });
+        try {
+            let endPoint = 'https://631c0e5f4fa7d3264ca61b8e.mockapi.io/api/v1/todos';
+            const res = await axios.get(endPoint);
+            setTodos({ ...todos, isLoading: false, isError: false, data: res.data, message: "Todo Fetched Successfully!" });
+        } catch (error) {
+            setTodos({ ...todos, isLoading: false, isError: true, message: "Opps! Something went wrong, Unable to Add Todo.  Try again later." })
+        }
+    }
+
+    React.useEffect(() => {
+        getTodos();
+        // eslint-disable-next-line 
+    }, [])
 
     return <Container>
         <Row>
@@ -56,6 +67,10 @@ export const Todos = (props) => {
         <Row>
             <Col>
                 <h5>All Todos</h5>
+                {/* Table */}
+                {todos.isLoading && <p>Fetching all todos....</p>}
+                {todos.isError && <p style={{ color: 'red' }}>Opps! Unable to fetch all todos. Try Again Later</p>}
+                <TodoTable rows={todos.data} />
             </Col>
         </Row>
     </Container>
