@@ -1,24 +1,36 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { AppRoutes } from "./router/routes";
+import { Login } from "./screens/login";
+import PrivateRoute from "./router/priavteRoute";
+import { AllTodos } from "./screens/allTodos";
+import { AddTodo } from "./screens/addTodo";
+import { EditTodo } from "./screens/editTodo";
+
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <BrowserRouter>
+      <Routes>
+
+        <Route path="/" element={<Navigate to={AppRoutes.login} />} />
+
+        {/* Public Routes */}
+        <Route path={AppRoutes.login} element={<Login />} />
+
+        {/* Private Routes */}
+        <Route path={AppRoutes.allTodos} element={<PrivateRoute path={AppRoutes.allTodos}>
+          <AllTodos />
+        </PrivateRoute>} />
+
+        <Route path={AppRoutes.addTodo} element={<PrivateRoute path={AppRoutes.addTodo}>
+          <AddTodo />
+        </PrivateRoute>} />
+
+        <Route path={AppRoutes.editTodo} element={<PrivateRoute path={AppRoutes.editTodo}>
+          <EditTodo />
+        </PrivateRoute>} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
