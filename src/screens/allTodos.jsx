@@ -1,6 +1,6 @@
 import axios from 'axios';
 import React from 'react';
-import { Alert, Button, Container, Spinner, Stack } from 'react-bootstrap';
+import { Alert, Button, Container, Spinner, Stack, Toast } from 'react-bootstrap';
 import Table from 'react-bootstrap/Table';
 import { config } from '../config';
 import { useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ export function AllTodos() {
     const [allTodos, updateAllTodos] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(false);
     const [isError, setIsError] = React.useState(false);
+    const [show, setShow] = React.useState(false);
 
     const navigate = useNavigate();
 
@@ -27,7 +28,27 @@ export function AllTodos() {
         navigate(AppRoutes.editTodo.replace(':id', todo.id));
     }
 
-    React.useEffect(() => {
+    const onDeletBtnClicked = (todo) => {
+        setShow(todo);
+    }
+
+    const confirmDelete = () => {
+        setIsLoading(true);
+        axios({
+            url: config.api_endpoint_baseURL + "/todos/" + show.id,
+            method: 'DELETE'
+        }).then(res => {
+            setIsLoading(false);
+            setShow(false);
+            getAllTodos();
+        }).catch(err => {
+            setIsLoading(false);
+            setIsError(true);
+            console.log("Err:", err);
+        })
+    };
+
+    const getAllTodos = () => {
         setIsLoading(true);
         axios({
             url: config.api_endpoint_baseURL + "/todos",
@@ -40,6 +61,10 @@ export function AllTodos() {
             setIsError(true);
             console.log("Err:", err);
         })
+    }
+
+    React.useEffect(() => {
+        getAllTodos();
     }, []);
 
     return (
@@ -55,6 +80,18 @@ export function AllTodos() {
 
             {isError && <Alert variant='danger'>Something went wrong, unable to fetch todos</Alert>}
 
+            <Toast onClose={() => setShow(false)} show={show} delay={3000}>
+                <Toast.Header>
+                    <strong>
+                        Delete Operation
+                    </strong>
+                </Toast.Header>
+                <Toast.Body>
+                    <p>Are you sure, do you want to delete?</p>
+                    <Button disabled={isLoading} onClick={confirmDelete} variant='danger'>Delete</Button>
+                </Toast.Body>
+            </Toast>
+
             <Table className='mt-3' striped bordered hover>
                 <thead>
                     <tr>
@@ -64,6 +101,7 @@ export function AllTodos() {
                         <th>Created At</th>
                         <th>Updated At</th>
                         <th>Edit</th>
+                        <th>Delete</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -76,6 +114,9 @@ export function AllTodos() {
                             <td>{new Date(todo.updated_at).toString()}</td>
                             <td>
                                 <Button variant='link' onClick={() => onEditBtnClicked(todo)} >Edit</Button>
+                            </td>
+                            <td>
+                                <Button variant='link' onClick={() => onDeletBtnClicked(todo)} >Delete</Button>
                             </td>
                         </tr>
                     })}
