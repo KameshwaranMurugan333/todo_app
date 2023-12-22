@@ -5,12 +5,13 @@ import Table from 'react-bootstrap/Table';
 import { config } from '../config';
 import { useNavigate } from 'react-router-dom';
 import { AppRoutes } from '../router/routes';
+import { useDeleteTodoMutation, useGetAllTodosQuery } from '../redux/services/todoServices';
 
 export function AllTodos() {
 
-    const [allTodos, updateAllTodos] = React.useState([]);
-    const [isLoading, setIsLoading] = React.useState(false);
-    const [isError, setIsError] = React.useState(false);
+    const { data, isLoading, isError, refetch } = useGetAllTodosQuery(null, { refetchOnMountOrArgChange: true });
+    const [deleteTodo, deleteTodoData] = useDeleteTodoMutation();
+
     const [show, setShow] = React.useState(false);
 
     const navigate = useNavigate();
@@ -33,39 +34,14 @@ export function AllTodos() {
     }
 
     const confirmDelete = () => {
-        setIsLoading(true);
-        axios({
-            url: config.api_endpoint_baseURL + "/todos/" + show.id,
-            method: 'DELETE'
-        }).then(res => {
-            setIsLoading(false);
-            setShow(false);
-            getAllTodos();
-        }).catch(err => {
-            setIsLoading(false);
-            setIsError(true);
-            console.log("Err:", err);
+        deleteTodo(show.id).then(res => {
+            if (res.data) {
+                alert('Todo Deleted Successfully!')
+                refetch();
+                setShow(null);
+            }
         })
     };
-
-    const getAllTodos = () => {
-        setIsLoading(true);
-        axios({
-            url: config.api_endpoint_baseURL + "/todos",
-            method: 'GET'
-        }).then(res => {
-            setIsLoading(false);
-            updateAllTodos(res.data);
-        }).catch(err => {
-            setIsLoading(false);
-            setIsError(true);
-            console.log("Err:", err);
-        })
-    }
-
-    React.useEffect(() => {
-        getAllTodos();
-    }, []);
 
     return (
         <Container>
@@ -76,7 +52,7 @@ export function AllTodos() {
                 <Button onClick={onLogoutBtnClicked}>Logout</Button>
             </Stack>
 
-            {isLoading && <Spinner />}
+            {isLoading || deleteTodoData.isLoading && <Spinner />}
 
             {isError && <Alert variant='danger'>Something went wrong, unable to fetch todos</Alert>}
 
@@ -105,7 +81,7 @@ export function AllTodos() {
                     </tr>
                 </thead>
                 <tbody>
-                    {allTodos.map((todo, index) => {
+                    {data?.map((todo, index) => {
                         return <tr key={todo.id}>
                             <td>{index + 1}</td>
                             <td>{todo.title}</td>

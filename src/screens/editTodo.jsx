@@ -5,52 +5,34 @@ import { config } from "../config";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import { AppRoutes } from "../router/routes";
+import { useGetTodoQuery, useLazyGetTodoQuery, useUpdateTodoMutation } from "../redux/services/todoServices";
 
 export const EditTodo = () => {
 
+    const [getTodo, getTodoData] = useLazyGetTodoQuery();
+    const [updateTodoMutation, { isLoading, error }] = useUpdateTodoMutation();
+
     const [title, setTitle] = React.useState("");
     const [date, setDate] = React.useState("");
-
-    const [errorMessage, setErrorMessage] = React.useState("");
-    const [isLoading, setIsLoading] = React.useState(false);
-    
-    // Stats used while getting data of a single todo
-    const [isFetching, setIsFetching] = React.useState(false);
-    const [isFetchingError, setIsFetchingError] = React.useState(false);
 
     const navigate = useNavigate();
     const params = useParams();
 
     const updateTodo = () => {
-        setIsLoading(true);
-        axios({
-            url: config.api_endpoint_baseURL + "/todos/" + params.id,
-            method: 'PUT',
-            data: { title, date, updated_at: new Date() },
-        }).then(res => {
-            setIsLoading(false);
-            alert("Todo Updated Successfully!");
-            navigate(AppRoutes.allTodos);
-        }).catch(err => {
-            setIsLoading(false);
-            setErrorMessage("Something went wrong, unable to update todo")
-            console.log("Err:", err);
+        updateTodoMutation({ id: params.id, body: { title, date, updated_at: new Date() } }).then(res => {
+            if (res.data) {
+                alert("Todo Updated Successfully!");
+                navigate(AppRoutes.allTodos);
+            }
         })
     }
 
     React.useEffect(() => {
-        setIsFetching(true);
-        axios({
-            url: config.api_endpoint_baseURL + "/todos/" + params.id,
-            method: 'GET'
-        }).then(res => {
-            setIsFetching(false);
-            setTitle(res.data.title);
-            setDate(res.data.date);
-        }).catch(err => {
-            setIsFetching(false);
-            setIsFetchingError(true);
-            console.log("Err:", err);
+        getTodo(params.id).then(res => {
+            if (res.data) {
+                setTitle(res.data.title);
+                setDate(res.data.date);
+            }
         })
         // eslint-disable-next-line
     }, [])
@@ -62,16 +44,16 @@ export const EditTodo = () => {
         <h3>Edit Todo</h3>
         <p>You can edit your todo here.</p>
 
-        {isFetching && <Spinner />}
+        {getTodoData.isLoading && <Spinner />}
 
-        {isFetchingError && <Alert variant='danger'>Something went wrong, unable to fetch todo</Alert>}
+        {getTodoData.isError && <Alert variant='danger'>Something went wrong, unable to fetch todo</Alert>}
 
-        {isFetching === false && <TodoForm
+        {getTodoData.isLoading === false && <TodoForm
             title={title}
             setTitle={setTitle}
             date={date}
             setDate={setDate}
-            errorMessage={errorMessage}
+            errorMessage={error?.message ?? ""}
             onSubmit={updateTodo}
             isLoading={isLoading}
         />}
