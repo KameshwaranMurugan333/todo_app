@@ -12,10 +12,12 @@ export function Login() {
     const [email, setEmail] = React.useState("");
     const [password, setPassword] = React.useState("");
     const [errorMessage, setErrorMessage] = React.useState("");
+    const [message, setMessage] = React.useState("");
 
     const onLoginBtnClicked = () => {
         if (email === 'ksmwaran333@gmail.com' && password === '12345678') {
             localStorage.setItem('auth_token', 'my token');
+            setMessage('Login successfull!!!')
             navigate(AppRoutes.allTodos);
         } else {
             setErrorMessage("Invalid email and password");
@@ -36,19 +38,20 @@ export function Login() {
                 {/* Email */}
                 <Form.Group className="mb-3" controlId="formBasicEmail">
                     <Form.Label>Email address</Form.Label>
-                    <Form.Control value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Enter email" />
+                    <Form.Control data-testid='emailInput' value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Enter email" />
                 </Form.Group>
 
                 {/* Password */}
                 <Form.Group className="mb-3" controlId="formBasicPassword">
                     <Form.Label>Password</Form.Label>
-                    <Form.Control value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Password" />
+                    <Form.Control data-testid='passwordInput' value={password} onChange={(e) => setPassword(e.target.value)} type="password" placeholder="Password" />
                 </Form.Group>
 
                 {errorMessage.length > 0 && <Alert className='mb-3' variant={'danger'}>{errorMessage}</Alert>}
+                {message.length > 0 && <Alert className='mb-3' variant={'success'}>{message}</Alert>}
 
                 {/* Login Button */}
-                <Button variant="primary" type="submit" onClick={onLoginBtnClicked}>
+                <Button data-testid='loginBtn' variant="primary" type="submit" onClick={onLoginBtnClicked}>
                     Login
                 </Button>
             </Form>

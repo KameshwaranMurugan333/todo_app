@@ -1,11 +1,9 @@
-import axios from 'axios';
 import React from 'react';
 import { Alert, Button, Container, Spinner, Stack, Toast } from 'react-bootstrap';
 import Table from 'react-bootstrap/Table';
-import { config } from '../config';
 import { useNavigate } from 'react-router-dom';
-import { AppRoutes } from '../router/routes';
 import { useDeleteTodoMutation, useGetAllTodosQuery } from '../redux/services/todoServices';
+import { AppRoutes } from '../router/routes';
 
 export function AllTodos() {
 
@@ -48,8 +46,8 @@ export function AllTodos() {
             <Stack className='mt-3' direction="horizontal" gap={3} >
                 <h3>All Todos</h3>
 
-                <Button onClick={onAddTodoButtonClicked} className='ms-auto'>Add Todo</Button>
-                <Button onClick={onLogoutBtnClicked}>Logout</Button>
+                <Button data-testid="addTodoBtn" onClick={onAddTodoButtonClicked} className='ms-auto'>Add Todo</Button>
+                <Button data-testid="logoutBtn" onClick={onLogoutBtnClicked}>Logout</Button>
             </Stack>
 
             {isLoading || deleteTodoData.isLoading && <Spinner />}
@@ -68,7 +66,7 @@ export function AllTodos() {
                 </Toast.Body>
             </Toast>
 
-            <Table className='mt-3' striped bordered hover>
+            <Table className='mt-3' striped bordered hover data-testid={'allTodoTable'}>
                 <thead>
                     <tr>
                         <th>#</th>
